@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- XA Connection Factory -->
+    <bean id="xaConnectionFactory" class="org.apache.activemq.ActiveMQXAConnectionFactory">
+
+        <!--
+            The following properties can be customized in the application.properties file.
+            Values can be changed using external environment variables (see application.properties for details).
+        -->
+
+        <property name="brokerURL" value="${activemq.broker.url}"/>
+        <property name="userName" value="${activemq.broker.username:#{null}}"/>
+        <property name="password" value="${activemq.broker.password:#{null}}"/>
+    </bean>
+
+    <!-- Jms configuration -->
+    <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
+        <property name="connectionFactory" ref="xaConnectionFactory"/>
+        <property name="transactionManager" ref="transactionManager"/>
+        <property name="transacted" value="true"/>
+        <property name="concurrentConsumers" value="${activemq.concurrent.consumers}"/>
+    </bean>
+
+    <bean id="amq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+        <property name="configuration" ref="jmsConfig"/>
+    </bean>
+
+</beans>

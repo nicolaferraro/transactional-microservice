@@ -1,0 +1,50 @@
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: nginx
+#  labels:
+#    app: nginx
+#spec:
+#  ports:
+#  - port: 80
+#    name: web
+#  # *.nginx.default.svc.cluster.local
+#  clusterIP: None
+#  selector:
+#    app: nginx
+---
+apiVersion: apps/v1alpha1
+kind: PetSet
+metadata:
+  name: transactional-microservice
+spec:
+  serviceName: "transactional-microservice"
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: transactional-microservice
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: transactional-microservice
+        image: nicolaferraro/transactional-microservice
+        imagePullPolicy: Never
+#        ports:
+#        - containerPort: 80
+#          name: web
+        volumeMounts:
+        - name: transactions
+          mountPath: /app/data/transaction-logs
+  volumeClaimTemplates:
+  - metadata:
+      name: transactions
+      annotations:
+        volume.alpha.kubernetes.io/storage-class: anything
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
